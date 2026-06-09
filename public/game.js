@@ -1176,7 +1176,6 @@ function handleJumpPads(player) {
 }
 
 function triggerJumpOrb() {
-  if (!isClassicMode()) return false;
   if (state.jumpOrbCooldown > 0) return false;
 
   const rect = playerRect(state.player);
@@ -1190,7 +1189,7 @@ function triggerJumpOrb() {
     state.doubleJumpAvailable = true;
     state.jumpBuffer = 0;
     state.jumpOrbCooldown = 0.18;
-    unlockAchievement("Orb", orb.orientation === "down" ? "Upside-down jump orb hit" : "Jump orb hit");
+    unlockAchievement("Double Jump Orb", orb.orientation === "down" ? "Upside-down jump orb hit" : "Jump orb hit");
     return true;
   }
 

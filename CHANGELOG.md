@@ -4,6 +4,9 @@ All notable GeoBait updates and patches are listed here.
 
 ## 2026-06-09
 
+- Fixed floating double-jump orbs.
+  - Jump orbs now activate in both Graphing calculator and Regular Geometry Dash play styles.
+  - Updated the orb achievement label so successful orb hits are easier to confirm.
 - Added ten new preset maps across the difficulty ladder.
   - Easy: `Easy Picnic`, `Easy Stair Jam`
   - Medium: `Medium Bounce Class`, `Medium Jet Quiz`
