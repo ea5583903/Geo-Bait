@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GeoBait</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="game-area" aria-label="GeoBait game">
+        <canvas id="game" width="1280" height="720"></canvas>
+        <div class="hud">
+          <div>
+            <strong id="levelName">Point Path</strong>
+            <span id="formulaLabel">points -> lines -> blocks</span>
+          </div>
+          <div class="stats">
+            <span id="speedLabel">speed 420</span>
+            <span id="progressLabel">0%</span>
+            <span id="attemptLabel">attempts 0</span>
+            <span id="deathLabel">deaths 0</span>
+            <span id="bestLabel">best 0%</span>
+          </div>
+        </div>
+        <div id="status" class="status">Press Start to begin</div>
+        <div id="achievement" class="achievement hidden" aria-live="polite">
+          <strong id="achievementName">Achievement</strong>
+          <span id="achievementDescription">Description</span>
+        </div>
+      </section>
+
+      <aside class="panel" aria-label="Level controls">
+        <div class="brand">
+          <span class="model">GB-84 Plus</span>
+          <h1>GeoBait</h1>
+          <p>Graph points into playable platform paths.</p>
+        </div>
+
+        <div class="controls">
+          <button id="playPause" type="button">Start</button>
+          <button id="jumpButton" type="button">Jump</button>
+          <button id="restart" type="button">Restart</button>
+          <button id="nextLevel" type="button">Next</button>
+          <button id="randomLevel" type="button">Random</button>
+        </div>
+
+        <label>
+          Example map
+          <select id="levelSelect"></select>
+        </label>
+
+        <label>
+          Play style
+          <select id="playStyle">
+            <option value="graph">Graphing calculator</option>
+            <option value="classic">Regular Geometry Dash</option>
+          </select>
+        </label>
+
+        <label class="editor-control">
+          Physics mode
+          <select id="physicsMode">
+            <option value="arcade">Regular Geometry Dash</option>
+            <option value="real">Real life physics</option>
+          </select>
+        </label>
+
+        <label class="editor-control">
+          Platform points
+          <textarea id="platformInput" spellcheck="false" rows="7"></textarea>
+        </label>
+
+        <label class="editor-control">
+          Spike points
+          <textarea id="hazardInput" spellcheck="false" rows="4"></textarea>
+        </label>
+
+        <label class="editor-control">
+          Portals
+          <textarea id="portalInput" spellcheck="false" rows="4"></textarea>
+        </label>
+
+        <label class="editor-control">
+          Jump pads
+          <textarea id="jumpPadInput" spellcheck="false" rows="3"></textarea>
+        </label>
+
+        <label class="editor-control">
+          Jump orbs
+          <textarea id="jumpOrbInput" spellcheck="false" rows="3"></textarea>
+        </label>
+
+        <div class="row editor-control">
+          <button id="addPointMode" type="button">Add Points</button>
+          <button id="undoPoint" type="button">Undo Point</button>
+        </div>
+
+        <div class="cheat-panel">
+          <label class="switch">
+            <input id="practiceMode" type="checkbox">
+            <span>Practice</span>
+          </label>
+          <label class="switch">
+            <input id="cheatsEnabled" type="checkbox">
+            <span>Cheats</span>
+          </label>
+          <label>
+            Cheat code
+            <input id="cheatCodeInput" type="text" autocomplete="off" spellcheck="false" placeholder="ENTER CODE">
+          </label>
+        </div>
+
+        <div class="character-panel">
+          <label class="switch">
+            <input id="trailEnabled" type="checkbox">
+            <span>Trail</span>
+          </label>
+          <label>
+            Character image
+            <input id="characterUpload" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+          </label>
+          <div class="character-colors" aria-label="Character colors">
+            <label>
+              Body
+              <input id="characterBodyColor" type="color" value="#28d8ff">
+            </label>
+            <label>
+              Eyes
+              <input id="characterEyeColor" type="color" value="#101115">
+            </label>
+            <label>
+              Accent
+              <input id="characterAccentColor" type="color" value="#ffd166">
+            </label>
+          </div>
+          <button id="resetCharacter" type="button">Reset Character</button>
+        </div>
+
+        <div class="row editor-control">
+          <label>
+            Gravity
+            <input id="gravityInput" type="number" value="1900" min="900" max="3000" step="50">
+          </label>
+          <label>
+            Jump
+            <input id="jumpInput" type="number" value="760" min="520" max="1100" step="20">
+          </label>
+        </div>
+
+        <button id="applyLevel" class="editor-control" type="button">Build Custom Level</button>
+
+        <div class="notes">
+          <span>Point format: one x,y pair per line. Example: 6,10.</span>
+          <span>Portal format: jet,12,3 or cube,20,1.</span>
+          <span>Jump pad format: 18,2 or down,18,5. Pads bounce automatically.</span>
+          <span>Jump orb format: 20,3 or down,20,6. Press Space while touching one.</span>
+          <span>Blocks snap to a grid and overlapping or too-crooked lines are fixed or rejected.</span>
+          <span>Start begins movement. Jump hops as cube, hold Jump/Space to fly as jet. Restart: R.</span>
+        </div>
+      </aside>
+    </main>
+
+    <script src="/game.js"></script>
+  </body>
+</html>
