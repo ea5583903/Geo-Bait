@@ -28,7 +28,7 @@ All notable GeoBait updates and patches are listed here.
   - Medium: `Medium Bounce Class`, `Medium Jet Quiz`
   - Hard: `Hard Spike Lab`, `Hard Portal Drill`
   - Ultra Hard: `Ultra Hard Needle Run`, `Ultra Hard Jet Razor`
-  - Merciless: `Merciless Final Bell`, `Merciless Tax Audit`
+  - Kys: `kys`, `kill ur self`
 - Added more gameplay and cosmetic extras.
   - Added a `Random` map button.
   - Added HUD stats for attempts, deaths, and best progress.
