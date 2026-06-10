@@ -368,7 +368,7 @@ body.classic-mode .control-section h2 {
 }
 
 .controls {
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .row {
@@ -603,6 +603,10 @@ select:focus {
 
 body.classic-mode .notes {
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.music-credit {
+  color: var(--gold);
 }
 
 @media (max-width: 860px) {

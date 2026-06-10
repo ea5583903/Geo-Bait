@@ -21,6 +21,8 @@ const ui = {
   restart: document.getElementById("restart"),
   nextLevel: document.getElementById("nextLevel"),
   randomLevel: document.getElementById("randomLevel"),
+  musicToggle: document.getElementById("musicToggle"),
+  musicTrack: document.getElementById("musicTrack"),
   botCountSelect: document.getElementById("botCountSelect"),
   levelSelect: document.getElementById("levelSelect"),
   playStyle: document.getElementById("playStyle"),
@@ -83,6 +85,7 @@ const TRAIL_STORAGE_KEY = "geobait-trail-enabled";
 const TRAIL_MAX_POINTS = 24;
 const BOT_COLORS = ["#ff6b8a", "#7dff9a", "#ffd166"];
 const BOT_NAMES = ["Byte", "Delta", "Nova"];
+const BOT_CRASH_CHANCES = [0.8, 0.5, 0.1];
 const defaultCharacter = {
   image: "",
   body: "#28d8ff",
@@ -983,6 +986,7 @@ function toggleRun() {
     state.runStarted = true;
     runStats.attempts += 1;
     updateRunStats();
+    playMusic();
   }
   if (!state.running) {
     stopJump();
@@ -990,6 +994,32 @@ function toggleRun() {
   ui.playPause.textContent = state.running ? "Pause" : "Start";
   ui.status.textContent = state.running ? "" : "Paused";
   ui.status.classList.toggle("hidden", state.running);
+}
+
+function playMusic() {
+  if (!ui.musicTrack.paused) return;
+
+  const playPromise = ui.musicTrack.play();
+  if (playPromise) {
+    playPromise
+      .then(() => {
+        ui.musicToggle.textContent = "Mute";
+      })
+      .catch(() => {
+        ui.musicToggle.textContent = "Music";
+      });
+  } else {
+    ui.musicToggle.textContent = "Mute";
+  }
+}
+
+function toggleMusic() {
+  if (ui.musicTrack.paused) {
+    playMusic();
+  } else {
+    ui.musicTrack.pause();
+    ui.musicToggle.textContent = "Music";
+  }
 }
 
 function update(dt) {
@@ -1093,10 +1123,27 @@ function makeBots() {
   return Array.from({ length: count }, (_, index) => ({
     name: BOT_NAMES[index],
     color: BOT_COLORS[index],
-    x: START_X - 34 - index * 26,
+    startX: START_X + 12 - index * 30,
+    x: START_X + 12 - index * 30,
     y: FLOOR_Y - PLAYER_SIZE,
-    speedScale: 0.93 + index * 0.055,
-    bobOffset: index * 1.8,
+    prevX: START_X + 12 - index * 30,
+    prevY: FLOOR_Y - PLAYER_SIZE,
+    vx: 0,
+    vy: 0,
+    rotation: 0,
+    grounded: true,
+    mode: "cube",
+    thrusting: false,
+    speedScale: 0.94 + index * 0.045,
+    crashChance: BOT_CRASH_CHANCES[index],
+    deaths: 0,
+    dead: false,
+    respawnTimer: 0,
+    jumpCooldown: 0,
+    jumpPadCooldown: 0,
+    jumpOrbCooldown: 0,
+    portalsTouched: new Set(),
+    jumpOrbsTouched: new Set(),
     finished: false
   }));
 }
@@ -1104,9 +1151,59 @@ function makeBots() {
 function updateBots(dt) {
   for (const bot of state.bots) {
     if (bot.finished) continue;
+    if (bot.dead) {
+      bot.respawnTimer = Math.max(0, bot.respawnTimer - dt);
+      if (bot.respawnTimer === 0) {
+        respawnBot(bot);
+      }
+      continue;
+    }
 
-    bot.x += getRunSpeed() * bot.speedScale * dt;
-    bot.y = getBotY(bot.x, bot.bobOffset);
+    bot.jumpCooldown = Math.max(0, bot.jumpCooldown - dt);
+    bot.jumpPadCooldown = Math.max(0, bot.jumpPadCooldown - dt);
+    bot.jumpOrbCooldown = Math.max(0, bot.jumpOrbCooldown - dt);
+    bot.prevX = bot.x;
+    bot.prevY = bot.y;
+    bot.vx = getRunSpeed() * bot.speedScale;
+
+    if (bot.mode === "jet") {
+      bot.thrusting = shouldBotThrust(bot);
+    } else {
+      bot.thrusting = false;
+      if (shouldBotJump(bot)) {
+        bot.vy = -getJumpPower() * 0.98;
+        bot.grounded = false;
+        bot.jumpCooldown = 0.2;
+      }
+    }
+
+    const thrustPower = level.physicsMode === "arcade" ? ARCADE_JET_THRUST : JET_THRUST;
+    const thrust = bot.thrusting && bot.mode === "jet" ? -thrustPower : 0;
+    bot.vy += (getGravity() + thrust) * dt;
+    if (bot.mode === "jet") {
+      bot.vy *= Math.max(0, 1 - JET_DRAG * dt);
+    }
+    bot.vy = clamp(bot.vy, -getBotMaxFallSpeed(bot), getBotMaxFallSpeed(bot));
+    bot.x += bot.vx * dt;
+    bot.y += bot.vy * dt;
+    bot.rotation += (bot.grounded ? 1.8 : 7.5) * dt;
+    bot.grounded = false;
+
+    if (!resolveBotPlatformCollisions(bot)) continue;
+    resolveBotBounds(bot);
+    handleBotPortals(bot);
+    handleBotJumpPads(bot);
+    handleBotJumpOrbs(bot);
+
+    if (hitsBotHazard(bot)) {
+      handleBotCrashRisk(bot);
+    }
+
+    if (bot.y > WORLD_HEIGHT + 200) {
+      crashBot(bot);
+      continue;
+    }
+
     if (bot.x >= level.goal.x) {
       bot.finished = true;
       bot.x = level.goal.x;
@@ -1114,13 +1211,180 @@ function updateBots(dt) {
   }
 }
 
-function getBotY(x, offset) {
+function crashBot(bot) {
+  bot.dead = true;
+  bot.deaths += 1;
+  bot.respawnTimer = 0.7;
+  bot.thrusting = false;
+  bot.vx = 0;
+  bot.vy = 0;
+}
+
+function respawnBot(bot) {
+  bot.dead = false;
+  bot.x = bot.startX;
+  bot.y = FLOOR_Y - PLAYER_SIZE;
+  bot.prevX = bot.startX;
+  bot.prevY = FLOOR_Y - PLAYER_SIZE;
+  bot.vx = 0;
+  bot.vy = 0;
+  bot.rotation = 0;
+  bot.grounded = true;
+  bot.mode = "cube";
+  bot.thrusting = false;
+  bot.jumpCooldown = 0.25;
+  bot.jumpPadCooldown = 0;
+  bot.jumpOrbCooldown = 0;
+  bot.portalsTouched = new Set();
+  bot.jumpOrbsTouched = new Set();
+}
+
+function handleBotCrashRisk(bot) {
+  if (Math.random() < bot.crashChance) {
+    crashBot(bot);
+    return;
+  }
+
+  bot.vy = -getJumpPower() * 0.75;
+  bot.grounded = false;
+  bot.jumpCooldown = 0.28;
+}
+
+function shouldBotJump(bot) {
+  if (!bot.grounded || bot.jumpCooldown > 0) return false;
+
+  const lookStart = bot.x + PLAYER_SIZE;
+  const lookEnd = bot.x + 150;
+  const floorNow = getBotFloorY(bot.x + PLAYER_SIZE / 2);
+  const floorAhead = getBotFloorY(lookEnd);
+  const upcomingHazard = level.hazards.some((hazard) => {
+    const left = Math.min(...hazard.points.map((point) => point.x));
+    const right = Math.max(...hazard.points.map((point) => point.x));
+    const top = Math.min(...hazard.points.map((point) => point.y));
+    return right >= lookStart && left <= lookEnd && top < bot.y + PLAYER_SIZE + 10;
+  });
+  const upcomingGap = floorAhead === FLOOR_Y && floorNow < FLOOR_Y - 6;
+  const upcomingStep = floorAhead < floorNow - 18;
+
+  return upcomingHazard || upcomingGap || upcomingStep;
+}
+
+function shouldBotThrust(bot) {
+  const floorAhead = getBotFloorY(bot.x + 170);
+  const targetY = floorAhead - PLAYER_SIZE - 110;
+  const ceilingRisk = bot.y < CEILING_Y + 44;
+  if (ceilingRisk) return false;
+  return bot.y > targetY || bot.vy > 180;
+}
+
+function getBotFloorY(x) {
   const platform = level.platforms
-    .filter((item) => x + PLAYER_SIZE / 2 >= item.x - 8 && x + PLAYER_SIZE / 2 <= item.x + item.w + 8)
+    .filter((item) => x >= item.x - 6 && x <= item.x + item.w + 6)
     .sort((a, b) => a.y - b.y)[0];
-  const groundY = platform ? platform.y : FLOOR_Y;
-  const hop = Math.abs(Math.sin(animationTime * 7 + offset)) * 18;
-  return groundY - PLAYER_SIZE - hop;
+  return platform ? platform.y : FLOOR_Y;
+}
+
+function getBotMaxFallSpeed(bot) {
+  if (bot.mode === "jet") {
+    return level.physicsMode === "arcade" ? 520 : 600;
+  }
+
+  return level.physicsMode === "arcade" ? 940 : 980;
+}
+
+function resolveBotPlatformCollisions(bot) {
+  const rect = playerRect(bot);
+
+  for (const platform of level.platforms) {
+    if (!rectsOverlap(rect, platform)) continue;
+
+    const prevBottom = bot.prevY + PLAYER_SIZE;
+    const normalLanding = prevBottom <= platform.y + 10 && bot.vy >= 0;
+    if (normalLanding) {
+      bot.y = platform.y - PLAYER_SIZE;
+      bot.vy = 0;
+      bot.grounded = true;
+      rect.y = bot.y;
+    } else {
+      if (Math.random() < bot.crashChance) {
+        crashBot(bot);
+        return false;
+      }
+
+      bot.x = bot.prevX;
+      bot.vy = -getJumpPower() * 0.48;
+      bot.jumpCooldown = 0.2;
+      rect.x = bot.x;
+    }
+  }
+
+  return true;
+}
+
+function resolveBotBounds(bot) {
+  if (bot.y < CEILING_Y) {
+    bot.y = CEILING_Y;
+    bot.vy = Math.max(0, bot.vy);
+  }
+
+  if (bot.y + PLAYER_SIZE > FLOOR_Y) {
+    bot.y = FLOOR_Y - PLAYER_SIZE;
+    bot.vy = Math.min(0, bot.vy);
+    bot.grounded = true;
+  }
+}
+
+function handleBotPortals(bot) {
+  const rect = playerRect(bot);
+
+  for (let i = 0; i < level.portals.length; i += 1) {
+    const portal = level.portals[i];
+    if (!rectsOverlap(rect, portal) || bot.portalsTouched.has(i)) continue;
+
+    bot.portalsTouched.add(i);
+    if (portal.type === "jet") {
+      bot.mode = "jet";
+      bot.grounded = false;
+    } else if (portal.type === "cube") {
+      bot.mode = "cube";
+      bot.thrusting = false;
+    }
+  }
+}
+
+function handleBotJumpPads(bot) {
+  if (bot.jumpPadCooldown > 0) return;
+
+  const rect = playerRect(bot);
+  const pad = level.jumpPads.find((item) => rectsOverlap(rect, item.hitbox));
+  if (!pad) return;
+
+  bot.vy = pad.orientation === "down" ? JUMP_PAD_POWER : -JUMP_PAD_POWER;
+  bot.grounded = false;
+  bot.jumpPadCooldown = 0.18;
+}
+
+function handleBotJumpOrbs(bot) {
+  if (bot.jumpOrbCooldown > 0) return;
+
+  const rect = playerRect(bot);
+  for (let i = 0; i < level.jumpOrbs.length; i += 1) {
+    const orb = level.jumpOrbs[i];
+    const closeEnough = orb.x >= bot.x - 18 && orb.x <= bot.x + 90;
+    const reachableY = Math.abs((bot.y + PLAYER_SIZE / 2) - (orb.y + orb.h / 2)) < 96;
+    if ((!rectsOverlap(rect, orb.hitbox) && (!closeEnough || !reachableY)) || bot.jumpOrbsTouched.has(i)) continue;
+
+    bot.jumpOrbsTouched.add(i);
+    bot.vy = orb.orientation === "down" ? JUMP_ORB_POWER : -JUMP_ORB_POWER;
+    bot.grounded = false;
+    bot.jumpOrbCooldown = 0.18;
+    return;
+  }
+}
+
+function hitsBotHazard(bot) {
+  const rect = playerRect(bot);
+  return level.hazards.some((hazard) => rectTriangleOverlap(rect, hazard.points));
 }
 
 function updateBotHud() {
@@ -1747,15 +2011,28 @@ function drawBots() {
     ctx.save();
     ctx.globalAlpha = 0.72;
     ctx.translate(bot.x + PLAYER_SIZE / 2, bot.y + PLAYER_SIZE / 2);
-    ctx.rotate(animationTime * 3.5 * bot.speedScale);
-    ctx.fillStyle = bot.color;
-    ctx.strokeStyle = isClassicMode() ? "#101115" : "#26361d";
-    ctx.lineWidth = 3;
-    ctx.fillRect(-PLAYER_SIZE / 2, -PLAYER_SIZE / 2, PLAYER_SIZE, PLAYER_SIZE);
-    ctx.strokeRect(-PLAYER_SIZE / 2, -PLAYER_SIZE / 2, PLAYER_SIZE, PLAYER_SIZE);
-    ctx.fillStyle = isClassicMode() ? "#101115" : "#a9c98c";
-    ctx.fillRect(-9, -8, 6, 7);
-    ctx.fillRect(5, -8, 6, 7);
+    if (bot.mode === "jet") {
+      ctx.fillStyle = bot.color;
+      ctx.beginPath();
+      ctx.moveTo(PLAYER_SIZE / 2, 0);
+      ctx.lineTo(-PLAYER_SIZE / 2, -PLAYER_SIZE / 2);
+      ctx.lineTo(-PLAYER_SIZE / 3, 0);
+      ctx.lineTo(-PLAYER_SIZE / 2, PLAYER_SIZE / 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = bot.thrusting ? "#ffd166" : "#ff5368";
+      ctx.fillRect(-PLAYER_SIZE / 2 - 10, -6, 12, 12);
+    } else {
+      ctx.rotate(bot.rotation);
+      ctx.fillStyle = bot.color;
+      ctx.strokeStyle = isClassicMode() ? "#101115" : "#26361d";
+      ctx.lineWidth = 3;
+      ctx.fillRect(-PLAYER_SIZE / 2, -PLAYER_SIZE / 2, PLAYER_SIZE, PLAYER_SIZE);
+      ctx.strokeRect(-PLAYER_SIZE / 2, -PLAYER_SIZE / 2, PLAYER_SIZE, PLAYER_SIZE);
+      ctx.fillStyle = isClassicMode() ? "#101115" : "#a9c98c";
+      ctx.fillRect(-9, -8, 6, 7);
+      ctx.fillRect(5, -8, 6, 7);
+    }
     ctx.restore();
 
     ctx.save();
@@ -2085,6 +2362,7 @@ ui.nextLevel.addEventListener("click", () => {
   loadUiLevel(next);
 });
 ui.randomLevel.addEventListener("click", loadRandomLevel);
+ui.musicToggle.addEventListener("click", toggleMusic);
 ui.botCountSelect.addEventListener("change", () => reset(currentLevelIndex));
 ui.levelSelect.addEventListener("change", () => loadUiLevel(Number(ui.levelSelect.value)));
 ui.playStyle.addEventListener("change", applyPlayStyle);

@@ -4,6 +4,18 @@ All notable GeoBait updates and patches are listed here.
 
 ## 2026-06-10
 
+- Added background music.
+  - Added `unity-remake.mp3` as the game music.
+  - Added a Music/Mute control.
+  - Added a thanks credit to TheFatRat and npph5412.
+- Finished independent CPU crash behavior.
+  - Bots now respawn on their own after crashes.
+  - Bot crash chances are 80%, 50%, and 10%.
+  - Player deaths no longer reset bot state unless the level is restarted.
+- Improved CPU racers so they behave more like real players.
+  - Bots now use gravity, velocity, collisions, jumping, and jet thrust.
+  - Bots can use portals, jump pads, and jump orbs.
+  - Bots now react to hazards and gaps instead of sliding in a straight line.
 - Added local multiplayer-style bot racing.
   - Added a `Bot race` selector with Off, 1 bot, and 3 bots.
   - Added translucent ghost racers with names.
