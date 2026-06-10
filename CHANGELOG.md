@@ -2,8 +2,24 @@
 
 All notable GeoBait updates and patches are listed here.
 
+## 2026-06-10
+
+- Added local multiplayer-style bot racing.
+  - Added a `Bot race` selector with Off, 1 bot, and 3 bots.
+  - Added translucent ghost racers with names.
+  - Added bot progress to the HUD.
+- Added more player customization features.
+  - Added a player name tag.
+  - Added visual size options.
+  - Added spin style options.
+  - Added an optional player glow.
+
 ## 2026-06-09
 
+- Added an easier-to-navigate sidebar.
+  - Grouped controls into Run, Maps, Build, Modes, Character, and Help sections.
+  - Added sticky section links at the top of the control panel.
+  - Moved custom-level controls into a dedicated Build section.
 - Fixed floating double-jump orbs.
   - Jump orbs now activate in both Graphing calculator and Regular Geometry Dash play styles.
   - Updated the orb achievement label so successful orb hits are easier to confirm.

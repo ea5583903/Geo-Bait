@@ -11,6 +11,7 @@ const ui = {
   formulaLabel: document.getElementById("formulaLabel"),
   speedLabel: document.getElementById("speedLabel"),
   progressLabel: document.getElementById("progressLabel"),
+  botProgressLabel: document.getElementById("botProgressLabel"),
   status: document.getElementById("status"),
   achievement: document.getElementById("achievement"),
   achievementName: document.getElementById("achievementName"),
@@ -20,6 +21,7 @@ const ui = {
   restart: document.getElementById("restart"),
   nextLevel: document.getElementById("nextLevel"),
   randomLevel: document.getElementById("randomLevel"),
+  botCountSelect: document.getElementById("botCountSelect"),
   levelSelect: document.getElementById("levelSelect"),
   playStyle: document.getElementById("playStyle"),
   physicsMode: document.getElementById("physicsMode"),
@@ -41,6 +43,10 @@ const ui = {
   bestLabel: document.getElementById("bestLabel"),
   trailEnabled: document.getElementById("trailEnabled"),
   characterUpload: document.getElementById("characterUpload"),
+  playerNameInput: document.getElementById("playerNameInput"),
+  playerSizeSelect: document.getElementById("playerSizeSelect"),
+  playerSpinSelect: document.getElementById("playerSpinSelect"),
+  playerGlowEnabled: document.getElementById("playerGlowEnabled"),
   characterBodyColor: document.getElementById("characterBodyColor"),
   characterEyeColor: document.getElementById("characterEyeColor"),
   characterAccentColor: document.getElementById("characterAccentColor"),
@@ -75,11 +81,17 @@ const JUMP_ORB_HITBOX = 58;
 const CHARACTER_STORAGE_KEY = "geobait-character-v1";
 const TRAIL_STORAGE_KEY = "geobait-trail-enabled";
 const TRAIL_MAX_POINTS = 24;
+const BOT_COLORS = ["#ff6b8a", "#7dff9a", "#ffd166"];
+const BOT_NAMES = ["Byte", "Delta", "Nova"];
 const defaultCharacter = {
   image: "",
   body: "#28d8ff",
   eyes: "#101115",
-  accent: "#ffd166"
+  accent: "#ffd166",
+  name: "",
+  size: "1",
+  spin: "normal",
+  glow: false
 };
 let character = { ...defaultCharacter };
 const runStats = {
@@ -894,6 +906,7 @@ function reset(levelIndex = currentLevelIndex, customDefinition = null) {
     practiceCheckpointIndex: -1,
     runStarted: false,
     trail: [],
+    bots: makeBots(),
     cameraX: 0,
     distance: 0,
     jumpBuffer: 0,
@@ -919,6 +932,7 @@ function reset(levelIndex = currentLevelIndex, customDefinition = null) {
   ui.speedLabel.textContent = `${level.physicsMode === "arcade" ? "GD" : "real"} speed ${getRunSpeed()}`;
   ui.progressLabel.textContent = "0%";
   updateRunStats(0);
+  updateBotHud();
   ui.playPause.textContent = "Start";
   ui.status.textContent = editingPoints ? "Click the grid to add points" : "Press Start to begin";
   ui.status.classList.toggle("hidden", !editingPoints);
@@ -982,6 +996,7 @@ function update(dt) {
   if (!state.running || state.dead || state.won) return;
 
   animationTime += dt;
+  updateBots(dt);
   state.jumpBuffer = Math.max(0, state.jumpBuffer - dt);
   state.coyoteTime = Math.max(0, state.coyoteTime - dt);
   state.jumpPadCooldown = Math.max(0, state.jumpPadCooldown - dt);
@@ -1035,6 +1050,7 @@ function update(dt) {
   state.cameraX = clamp(player.x - 260, 0, Math.max(0, level.length - viewWidth));
   state.distance = player.x;
   updateRunStats(clamp(Math.floor((player.x / level.length) * 100), 0, 100));
+  updateBotHud();
 }
 
 function playerRect(player) {
@@ -1070,6 +1086,52 @@ function updateRunStats(progress = null) {
   ui.attemptLabel.textContent = `attempts ${runStats.attempts}`;
   ui.deathLabel.textContent = `deaths ${runStats.deaths}`;
   ui.bestLabel.textContent = `best ${runStats.bestProgress}%`;
+}
+
+function makeBots() {
+  const count = Number(ui.botCountSelect?.value || 0);
+  return Array.from({ length: count }, (_, index) => ({
+    name: BOT_NAMES[index],
+    color: BOT_COLORS[index],
+    x: START_X - 34 - index * 26,
+    y: FLOOR_Y - PLAYER_SIZE,
+    speedScale: 0.93 + index * 0.055,
+    bobOffset: index * 1.8,
+    finished: false
+  }));
+}
+
+function updateBots(dt) {
+  for (const bot of state.bots) {
+    if (bot.finished) continue;
+
+    bot.x += getRunSpeed() * bot.speedScale * dt;
+    bot.y = getBotY(bot.x, bot.bobOffset);
+    if (bot.x >= level.goal.x) {
+      bot.finished = true;
+      bot.x = level.goal.x;
+    }
+  }
+}
+
+function getBotY(x, offset) {
+  const platform = level.platforms
+    .filter((item) => x + PLAYER_SIZE / 2 >= item.x - 8 && x + PLAYER_SIZE / 2 <= item.x + item.w + 8)
+    .sort((a, b) => a.y - b.y)[0];
+  const groundY = platform ? platform.y : FLOOR_Y;
+  const hop = Math.abs(Math.sin(animationTime * 7 + offset)) * 18;
+  return groundY - PLAYER_SIZE - hop;
+}
+
+function updateBotHud() {
+  if (!state.bots.length) {
+    ui.botProgressLabel.textContent = "bots off";
+    return;
+  }
+
+  ui.botProgressLabel.textContent = state.bots
+    .map((bot) => `${bot.name} ${clamp(Math.floor((bot.x / level.length) * 100), 0, 100)}%`)
+    .join(" / ");
 }
 
 function pushTrailPoint(player) {
@@ -1362,6 +1424,7 @@ function draw() {
   ctx.translate(-state.cameraX, 0);
   drawWorld();
   drawTrail();
+  drawBots();
   drawPlayer();
   ctx.restore();
 }
@@ -1634,8 +1697,14 @@ function drawEditorLines() {
 
 function drawPlayer() {
   const player = state.player;
+  const visualScale = Number(character.size || 1);
   ctx.save();
   ctx.translate(player.x + PLAYER_SIZE / 2, player.y + PLAYER_SIZE / 2);
+  ctx.scale(visualScale, visualScale);
+  if (character.glow) {
+    ctx.shadowColor = character.accent;
+    ctx.shadowBlur = 16;
+  }
   if (player.mode === "jet") {
     ctx.fillStyle = isClassicMode() ? "#28d8ff" : "#1b5475";
     ctx.beginPath();
@@ -1648,7 +1717,7 @@ function drawPlayer() {
     ctx.fillStyle = state.thrusting ? isClassicMode() ? "#ffd166" : "#80551f" : isClassicMode() ? "#ff5368" : "#6f241f";
     ctx.fillRect(-PLAYER_SIZE / 2 - 10, -6, 12, 12);
   } else {
-    ctx.rotate(player.rotation);
+    ctx.rotate(getPlayerRotation(player));
     const bounce = player.grounded ? Math.sin(animationTime * 18) * 0.035 : 0;
     const pulse = player.grounded ? 1 + Math.abs(Math.sin(animationTime * 18)) * 0.03 : 1;
     ctx.scale(pulse, 1 - bounce);
@@ -1667,6 +1736,63 @@ function drawPlayer() {
       ctx.fillRect(5, -8, 6, 6);
     }
   }
+  ctx.restore();
+  drawPlayerName(player);
+}
+
+function drawBots() {
+  if (!state.bots.length) return;
+
+  for (const bot of state.bots) {
+    ctx.save();
+    ctx.globalAlpha = 0.72;
+    ctx.translate(bot.x + PLAYER_SIZE / 2, bot.y + PLAYER_SIZE / 2);
+    ctx.rotate(animationTime * 3.5 * bot.speedScale);
+    ctx.fillStyle = bot.color;
+    ctx.strokeStyle = isClassicMode() ? "#101115" : "#26361d";
+    ctx.lineWidth = 3;
+    ctx.fillRect(-PLAYER_SIZE / 2, -PLAYER_SIZE / 2, PLAYER_SIZE, PLAYER_SIZE);
+    ctx.strokeRect(-PLAYER_SIZE / 2, -PLAYER_SIZE / 2, PLAYER_SIZE, PLAYER_SIZE);
+    ctx.fillStyle = isClassicMode() ? "#101115" : "#a9c98c";
+    ctx.fillRect(-9, -8, 6, 7);
+    ctx.fillRect(5, -8, 6, 7);
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalAlpha = 0.88;
+    ctx.font = "800 11px 'Courier New', ui-monospace, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = isClassicMode() ? "#101115" : "#a9c98c";
+    ctx.fillStyle = bot.color;
+    ctx.strokeText(bot.name, bot.x + PLAYER_SIZE / 2, bot.y - 8);
+    ctx.fillText(bot.name, bot.x + PLAYER_SIZE / 2, bot.y - 8);
+    ctx.restore();
+  }
+}
+
+function getPlayerRotation(player) {
+  if (character.spin === "none") return 0;
+  if (character.spin === "steady") return animationTime * 4;
+  return player.rotation;
+}
+
+function drawPlayerName(player) {
+  const name = character.name.trim();
+  if (!name) return;
+
+  ctx.save();
+  ctx.font = "800 12px 'Courier New', ui-monospace, monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = isClassicMode() ? "#101115" : "#a9c98c";
+  ctx.fillStyle = isClassicMode() ? "#f6f7fb" : "#26361d";
+  const x = player.x + PLAYER_SIZE / 2;
+  const y = player.y - 10;
+  ctx.strokeText(name, x, y);
+  ctx.fillText(name, x, y);
   ctx.restore();
 }
 
@@ -1761,6 +1887,10 @@ function syncCharacterControls() {
   ui.characterBodyColor.value = character.body;
   ui.characterEyeColor.value = character.eyes;
   ui.characterAccentColor.value = character.accent;
+  ui.playerNameInput.value = character.name;
+  ui.playerSizeSelect.value = character.size;
+  ui.playerSpinSelect.value = character.spin;
+  ui.playerGlowEnabled.checked = character.glow;
 }
 
 function updateCharacterImage() {
@@ -1772,6 +1902,11 @@ function updateCharacterImage() {
 }
 
 function updateCharacterColor(key, value) {
+  character[key] = value;
+  saveCharacter();
+}
+
+function updateCharacterOption(key, value) {
   character[key] = value;
   saveCharacter();
 }
@@ -1950,6 +2085,7 @@ ui.nextLevel.addEventListener("click", () => {
   loadUiLevel(next);
 });
 ui.randomLevel.addEventListener("click", loadRandomLevel);
+ui.botCountSelect.addEventListener("change", () => reset(currentLevelIndex));
 ui.levelSelect.addEventListener("change", () => loadUiLevel(Number(ui.levelSelect.value)));
 ui.playStyle.addEventListener("change", applyPlayStyle);
 ui.physicsMode.addEventListener("change", () => buildCustomLevel());
@@ -1979,6 +2115,10 @@ ui.characterUpload.addEventListener("change", uploadCharacter);
 ui.characterBodyColor.addEventListener("input", () => updateCharacterColor("body", ui.characterBodyColor.value));
 ui.characterEyeColor.addEventListener("input", () => updateCharacterColor("eyes", ui.characterEyeColor.value));
 ui.characterAccentColor.addEventListener("input", () => updateCharacterColor("accent", ui.characterAccentColor.value));
+ui.playerNameInput.addEventListener("input", () => updateCharacterOption("name", ui.playerNameInput.value.trim().slice(0, 14)));
+ui.playerSizeSelect.addEventListener("change", () => updateCharacterOption("size", ui.playerSizeSelect.value));
+ui.playerSpinSelect.addEventListener("change", () => updateCharacterOption("spin", ui.playerSpinSelect.value));
+ui.playerGlowEnabled.addEventListener("change", () => updateCharacterOption("glow", ui.playerGlowEnabled.checked));
 ui.resetCharacter.addEventListener("click", resetCharacter);
 ui.addPointMode.addEventListener("click", () => {
   editingPoints = !editingPoints;

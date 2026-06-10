@@ -296,6 +296,71 @@ body.classic-mode .editor-control {
   font-size: 14px;
 }
 
+.panel-nav {
+  position: sticky;
+  top: -22px;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: -2px -2px 0;
+  padding: 10px 0;
+  background: linear-gradient(180deg, var(--case) 78%, rgba(32, 36, 42, 0));
+}
+
+.panel-nav a {
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #11151a;
+  border-radius: 5px;
+  background: #15191f;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.panel-nav a:hover,
+.panel-nav a:focus-visible {
+  border-color: #8fd0ff;
+  outline: none;
+}
+
+.control-section {
+  display: grid;
+  gap: 10px;
+  scroll-margin-top: 92px;
+}
+
+.control-section h2 {
+  margin: 0;
+  padding: 0 0 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+body.classic-mode .panel-nav {
+  background: linear-gradient(180deg, #181b22 78%, rgba(24, 27, 34, 0));
+}
+
+body.classic-mode .panel-nav a {
+  border-color: #303746;
+  background: #202632;
+}
+
+body.classic-mode .panel-nav a[href="#buildControls"] {
+  display: none;
+}
+
+body.classic-mode .control-section h2 {
+  border-color: #303746;
+  text-transform: none;
+}
+
 .controls,
 .row {
   display: grid;
@@ -338,6 +403,18 @@ body.classic-mode .editor-control {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+}
+
+.player-options {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 8px;
+  align-items: end;
+}
+
+.player-options .switch {
+  grid-column: 1 / -1;
+  min-height: 48px;
 }
 
 .character-colors label {
@@ -553,8 +630,21 @@ body.classic-mode .notes {
     grid-template-columns: 1fr;
   }
 
+  .panel-nav {
+    top: -22px;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .character-colors {
     grid-template-columns: 1fr;
+  }
+
+  .player-options {
+    grid-template-columns: 1fr;
+  }
+
+  .player-options .switch {
+    grid-column: auto;
   }
 
   .row {
