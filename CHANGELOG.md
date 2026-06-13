@@ -2,8 +2,26 @@
 
 All notable GeoBait updates and patches are listed here.
 
+## 2026-06-12
+
+- Made jump pad and jump orb hitboxes invisible while keeping the larger collision areas active.
+
+## 2026-06-11
+
+- Added eight more preset maps.
+  - `Practice Trail`
+  - `Cloud Steps`
+  - `Medium Maze`
+  - `Jet Homework`
+  - `Hard Orbit`
+  - `Hard Jet Factory`
+  - `Ultra Hard Overclock`
+  - `Final Boss Rush`
+
 ## 2026-06-10
 
+- Added a special win screen for the hardest maps.
+  - Clearing a Merciless map now opens a dedicated completion overlay.
 - Added background music.
   - Added `unity-remake.mp3` as the game music.
   - Added a Music/Mute control.

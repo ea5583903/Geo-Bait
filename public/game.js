@@ -16,6 +16,9 @@ const ui = {
   achievement: document.getElementById("achievement"),
   achievementName: document.getElementById("achievementName"),
   achievementDescription: document.getElementById("achievementDescription"),
+  extremeWinScreen: document.getElementById("extremeWinScreen"),
+  extremeWinText: document.getElementById("extremeWinText"),
+  closeWinScreen: document.getElementById("closeWinScreen"),
   playPause: document.getElementById("playPause"),
   jumpButton: document.getElementById("jumpButton"),
   restart: document.getElementById("restart"),
@@ -481,6 +484,94 @@ const examples = [
     speed: 565,
     gravity: 2350,
     jump: 1000
+  },
+  {
+    name: "Practice Trail",
+    points: "0,0\n14,0\n22,1\n34,1\n46,0\n62,0",
+    spikes: "18,0\n40,1\n56,0",
+    portals: "",
+    jumpPads: "32,1",
+    jumpOrbs: "",
+    speed: 370,
+    gravity: 1750,
+    jump: 790
+  },
+  {
+    name: "Cloud Steps",
+    points: "0,0\n8,0\n14,2\n21,2\n28,0\n36,0\n43,3\n51,3\n60,1\n70,1\n82,0",
+    spikes: "10,0\n18,2\n31,0\n47,3\n64,1\n77,0",
+    portals: "",
+    jumpPads: "41,0",
+    jumpOrbs: "16,4\n54,5",
+    speed: 405,
+    gravity: 1850,
+    jump: 850
+  },
+  {
+    name: "Medium Maze",
+    points: "0,0\n7,0\n12,1\n18,1\n24,3\n32,3\n39,1\n48,1\n55,2\n64,2\n76,0\n90,0",
+    spikes: "8,0\n15,1\n27,3\n35,3\n44,1\n59,2\n70,0\n84,0",
+    portals: "",
+    jumpPads: "22,1\n53,1",
+    jumpOrbs: "30,5\n66,4",
+    speed: 435,
+    gravity: 1950,
+    jump: 880
+  },
+  {
+    name: "Jet Homework",
+    points: "0,0\n9,0\n16,1\n28,1\n36,2\n50,2\n58,0\n70,0\n82,3\n96,3\n108,0",
+    spikes: "7,0\n21,1\ndown,32,3\n42,2\n54,2\n64,0\n88,3\ndown,101,5",
+    portals: "jet,18,1\ncube,56,0\njet,78,2\ncube,102,1",
+    jumpPads: "14,0",
+    jumpOrbs: "34,4\n72,3\n98,5",
+    speed: 445,
+    gravity: 1950,
+    jump: 870
+  },
+  {
+    name: "Hard Orbit",
+    points: "0,0\n6,0\n11,2\n17,0\n24,3\n31,1\n38,4\n46,2\n54,0\n62,3\n70,1\n79,4\n90,2\n102,0",
+    spikes: "7,0\n13,2\n20,0\n27,3\n34,1\n42,4\ndown,48,6\n58,0\n66,3\n74,1\n84,4\n96,0",
+    portals: "",
+    jumpPads: "23,1\n52,0\n78,2",
+    jumpOrbs: "12,4\n32,5\n49,6\n68,4\n88,5",
+    speed: 485,
+    gravity: 2100,
+    jump: 940
+  },
+  {
+    name: "Hard Jet Factory",
+    points: "0,0\n8,0\n13,1\n25,1\n31,3\n43,3\n49,1\n62,1\n70,4\n84,4\n93,2\n106,2\n118,0",
+    spikes: "6,0\n16,1\n22,1\ndown,29,4\n36,3\n45,3\n55,1\ndown,67,5\n76,4\n88,4\n99,2\n112,0",
+    portals: "jet,12,1\ncube,52,1\njet,66,2\ncube,108,2",
+    jumpPads: "30,1\n92,2",
+    jumpOrbs: "58,4\n82,6\n104,4",
+    speed: 495,
+    gravity: 2150,
+    jump: 930
+  },
+  {
+    name: "Ultra Hard Overclock",
+    points: "0,0\n5,0\n9,2\n14,0\n19,3\n25,1\n31,4\n38,2\n45,0\n52,3\n59,1\n66,4\n74,2\n82,0\n91,3\n101,1\n112,4\n124,0",
+    spikes: "4,0\n7,0\n11,2\n16,0\n22,3\n28,1\n34,4\ndown,40,6\n43,2\n49,0\n56,3\n63,1\n70,4\n78,2\n86,0\n96,3\n106,1\n116,4",
+    portals: "jet,50,2\ncube,72,2\njet,90,2\ncube,114,1",
+    jumpPads: "18,1\n37,2\n81,0\n120,0",
+    jumpOrbs: "10,4\n29,5\n54,5\ndown,68,6\n94,5\n109,6",
+    speed: 545,
+    gravity: 2250,
+    jump: 985
+  },
+  {
+    name: "Final Boss Rush",
+    points: "0,0\n4,0\n8,1\n12,0\n17,2\n22,2\n27,0\n32,0\n37,3\n43,3\n49,1\n55,1\n61,4\n68,4\n75,2\n82,2\n89,0\n97,0\n104,3\n112,1\n121,4\n132,2\n144,0",
+    spikes: "3,0\n6,0\n10,1\n14,0\n19,2\n25,2\n30,0\n35,0\n40,3\n46,3\n52,1\n58,1\ndown,63,6\n66,4\n72,4\n79,2\n86,2\n93,0\n101,0\n108,3\n116,1\n126,4\n137,2",
+    portals: "jet,31,1\ncube,53,1\njet,88,1\ncube,118,2",
+    jumpPads: "16,1\n36,0\n60,2\ndown,77,5\n99,0\n130,2",
+    jumpOrbs: "9,3\n24,4\n42,5\n64,6\ndown,80,5\n96,3\n111,5\n125,6",
+    speed: 570,
+    gravity: 2350,
+    jump: 1000
   }
 ];
 
@@ -940,6 +1031,7 @@ function reset(levelIndex = currentLevelIndex, customDefinition = null) {
   ui.status.textContent = editingPoints ? "Click the grid to add points" : "Press Start to begin";
   ui.status.classList.toggle("hidden", !editingPoints);
   ui.achievement.classList.add("hidden");
+  ui.extremeWinScreen.classList.add("hidden");
 }
 
 function jump() {
@@ -1640,6 +1732,22 @@ function win() {
   ui.playPause.textContent = "Restart";
   ui.status.textContent = "Level complete";
   ui.status.classList.remove("hidden");
+  if (isExtremeLevel()) {
+    showExtremeWinScreen();
+  }
+}
+
+function isExtremeLevel() {
+  return level.name.startsWith("Merciless");
+}
+
+function showExtremeWinScreen() {
+  ui.extremeWinText.textContent = `${level.name} cleared. That was the hardest tier.`;
+  ui.extremeWinScreen.classList.remove("hidden");
+}
+
+function hideExtremeWinScreen() {
+  ui.extremeWinScreen.classList.add("hidden");
 }
 
 function unlockAchievement(name, description) {
@@ -1856,12 +1964,6 @@ function drawJumpPad(jumpPad) {
   const center = screenPoint(jumpPad.x + jumpPad.w / 2, jumpPad.y + jumpPad.h / 2);
   const pulse = 1 + Math.sin(animationTime * 9 + jumpPad.x * 0.01) * 0.08;
 
-  if (!isClassicMode()) {
-    ctx.strokeStyle = "rgba(38, 54, 29, 0.28)";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(jumpPad.hitbox.x, jumpPad.hitbox.y, jumpPad.hitbox.w, jumpPad.hitbox.h);
-  }
-
   ctx.save();
   ctx.translate(center.x, center.y);
   ctx.scale(1, jumpPad.orientation === "down" ? -1 : 1);
@@ -1883,12 +1985,6 @@ function drawJumpPad(jumpPad) {
 function drawJumpOrb(jumpOrb) {
   const center = screenPoint(jumpOrb.x + jumpOrb.w / 2, jumpOrb.y + jumpOrb.h / 2);
   const pulse = 1 + Math.sin(animationTime * 8 + jumpOrb.x * 0.01) * 0.08;
-
-  if (!isClassicMode()) {
-    ctx.strokeStyle = "rgba(38, 54, 29, 0.28)";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(jumpOrb.hitbox.x, jumpOrb.hitbox.y, jumpOrb.hitbox.w, jumpOrb.hitbox.h);
-  }
 
   ctx.save();
   ctx.translate(center.x, center.y);
@@ -2363,6 +2459,7 @@ ui.nextLevel.addEventListener("click", () => {
 });
 ui.randomLevel.addEventListener("click", loadRandomLevel);
 ui.musicToggle.addEventListener("click", toggleMusic);
+ui.closeWinScreen.addEventListener("click", hideExtremeWinScreen);
 ui.botCountSelect.addEventListener("change", () => reset(currentLevelIndex));
 ui.levelSelect.addEventListener("change", () => loadUiLevel(Number(ui.levelSelect.value)));
 ui.playStyle.addEventListener("change", applyPlayStyle);
