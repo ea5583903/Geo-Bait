@@ -29,12 +29,45 @@
           <strong id="achievementName">Achievement</strong>
           <span id="achievementDescription">Description</span>
         </div>
+        <div id="finalTrackPanel" class="final-track hidden">
+          <span>Final-level music: It's TV Time! by Toby Fox</span>
+        </div>
+        <div id="semifinalTrackPanel" class="final-track hidden">
+          <span>Semifinal music: Super Mario 64 Looping the Rooms</span>
+        </div>
         <div id="extremeWinScreen" class="win-screen hidden" role="dialog" aria-modal="true" aria-labelledby="extremeWinTitle">
           <div class="win-screen-panel">
             <span class="win-screen-rank">Merciless Clear</span>
             <h2 id="extremeWinTitle">You beat the impossible map</h2>
             <p id="extremeWinText">That was the hardest tier. Run it back or pick another level.</p>
             <button id="closeWinScreen" type="button">Continue</button>
+          </div>
+        </div>
+        <div id="startScreen" class="start-screen" role="dialog" aria-modal="true" aria-labelledby="startScreenTitle">
+          <div id="startMenu" class="start-screen-panel">
+            <span class="start-screen-model">GB-84 Plus</span>
+            <h2 id="startScreenTitle">GeoBait</h2>
+            <p>Graphing-calculator Geometry Dash with custom maps, practice checkpoints, bots, cheats, and player customization.</p>
+            <div class="start-screen-actions">
+              <button id="startGameButton" type="button">Start Game</button>
+              <button id="showInstructionsButton" type="button">Instructions</button>
+            </div>
+          </div>
+          <div id="instructionsPanel" class="start-screen-panel instructions-panel hidden">
+            <span class="start-screen-model">How to Play</span>
+            <h2>Instructions</h2>
+            <ul>
+              <li>Press Space or Jump to hop as the cube.</li>
+              <li>Hold Space or Jump while in jet mode to fly.</li>
+              <li>Orange pads bounce automatically.</li>
+              <li>Floating orbs activate when you press Space while touching them.</li>
+              <li>Practice mode saves checkpoints and respawns you there.</li>
+              <li>Use the sidebar to pick maps, bots, play style, cheats, and character options.</li>
+            </ul>
+            <div class="start-screen-actions">
+              <button id="instructionsStartButton" type="button">Start Game</button>
+              <button id="backToStartButton" type="button">Back</button>
+            </div>
           </div>
         </div>
         <audio id="musicTrack" src="/unity-remake.mp3" loop preload="auto"></audio>

@@ -16,9 +16,18 @@ const ui = {
   achievement: document.getElementById("achievement"),
   achievementName: document.getElementById("achievementName"),
   achievementDescription: document.getElementById("achievementDescription"),
+  finalTrackPanel: document.getElementById("finalTrackPanel"),
+  semifinalTrackPanel: document.getElementById("semifinalTrackPanel"),
   extremeWinScreen: document.getElementById("extremeWinScreen"),
   extremeWinText: document.getElementById("extremeWinText"),
   closeWinScreen: document.getElementById("closeWinScreen"),
+  startScreen: document.getElementById("startScreen"),
+  startMenu: document.getElementById("startMenu"),
+  instructionsPanel: document.getElementById("instructionsPanel"),
+  startGameButton: document.getElementById("startGameButton"),
+  showInstructionsButton: document.getElementById("showInstructionsButton"),
+  instructionsStartButton: document.getElementById("instructionsStartButton"),
+  backToStartButton: document.getElementById("backToStartButton"),
   playPause: document.getElementById("playPause"),
   jumpButton: document.getElementById("jumpButton"),
   restart: document.getElementById("restart"),
@@ -89,6 +98,9 @@ const TRAIL_MAX_POINTS = 24;
 const BOT_COLORS = ["#ff6b8a", "#7dff9a", "#ffd166"];
 const BOT_NAMES = ["Byte", "Delta", "Nova"];
 const BOT_CRASH_CHANCES = [0.8, 0.5, 0.1];
+const DEFAULT_MUSIC_SRC = "/unity-remake.mp3";
+const SEMIFINAL_MUSIC_SRC = "/semifinal-music.mp3";
+const FINAL_MUSIC_SRC = "/its-tv-time.mp3";
 const defaultCharacter = {
   image: "",
   body: "#28d8ff",
@@ -552,7 +564,7 @@ const examples = [
     jump: 930
   },
   {
-    name: "Ultra Hard Overclock",
+    name: "It's NOT TV time :(",
     points: "0,0\n5,0\n9,2\n14,0\n19,3\n25,1\n31,4\n38,2\n45,0\n52,3\n59,1\n66,4\n74,2\n82,0\n91,3\n101,1\n112,4\n124,0",
     spikes: "4,0\n7,0\n11,2\n16,0\n22,3\n28,1\n34,4\ndown,40,6\n43,2\n49,0\n56,3\n63,1\n70,4\n78,2\n86,0\n96,3\n106,1\n116,4",
     portals: "jet,50,2\ncube,72,2\njet,90,2\ncube,114,1",
@@ -563,7 +575,7 @@ const examples = [
     jump: 985
   },
   {
-    name: "Final Boss Rush",
+    name: "It's TV Time!!",
     points: "0,0\n4,0\n8,1\n12,0\n17,2\n22,2\n27,0\n32,0\n37,3\n43,3\n49,1\n55,1\n61,4\n68,4\n75,2\n82,2\n89,0\n97,0\n104,3\n112,1\n121,4\n132,2\n144,0",
     spikes: "3,0\n6,0\n10,1\n14,0\n19,2\n25,2\n30,0\n35,0\n40,3\n46,3\n52,1\n58,1\ndown,63,6\n66,4\n72,4\n79,2\n86,2\n93,0\n101,0\n108,3\n116,1\n126,4\n137,2",
     portals: "jet,31,1\ncube,53,1\njet,88,1\ncube,118,2",
@@ -1032,6 +1044,7 @@ function reset(levelIndex = currentLevelIndex, customDefinition = null) {
   ui.status.classList.toggle("hidden", !editingPoints);
   ui.achievement.classList.add("hidden");
   ui.extremeWinScreen.classList.add("hidden");
+  updateLevelMusic();
 }
 
 function jump() {
@@ -1086,6 +1099,52 @@ function toggleRun() {
   ui.playPause.textContent = state.running ? "Pause" : "Start";
   ui.status.textContent = state.running ? "" : "Paused";
   ui.status.classList.toggle("hidden", state.running);
+}
+
+function isStartScreenOpen() {
+  return !ui.startScreen.classList.contains("hidden");
+}
+
+function startFromStartScreen() {
+  ui.startScreen.classList.add("hidden");
+  ui.startMenu.classList.remove("hidden");
+  ui.instructionsPanel.classList.add("hidden");
+  if (!state.running && !state.dead && !state.won) {
+    toggleRun();
+  }
+}
+
+function showInstructions() {
+  ui.startMenu.classList.add("hidden");
+  ui.instructionsPanel.classList.remove("hidden");
+}
+
+function showStartMenu() {
+  ui.instructionsPanel.classList.add("hidden");
+  ui.startMenu.classList.remove("hidden");
+}
+
+function isFinalMusicLevel() {
+  return level.name === "kys" || currentLevelIndex === examples.length - 1;
+}
+
+function isSemifinalMusicLevel() {
+  return currentLevelIndex === examples.length - 2;
+}
+
+function updateLevelMusic() {
+  const nextSrc = isFinalMusicLevel() ? FINAL_MUSIC_SRC : isSemifinalMusicLevel() ? SEMIFINAL_MUSIC_SRC : DEFAULT_MUSIC_SRC;
+  const wasPlaying = !ui.musicTrack.paused;
+  const semifinalMusic = isSemifinalMusicLevel();
+  ui.finalTrackPanel.classList.toggle("hidden", !isFinalMusicLevel());
+  ui.semifinalTrackPanel.classList.toggle("hidden", !semifinalMusic);
+  if (ui.musicTrack.getAttribute("src") !== nextSrc) {
+    ui.musicTrack.setAttribute("src", nextSrc);
+    ui.musicTrack.load();
+    if (wasPlaying) {
+      playMusic();
+    }
+  }
 }
 
 function playMusic() {
@@ -2451,6 +2510,10 @@ ui.jumpButton.addEventListener("pointerdown", (event) => {
 ui.jumpButton.addEventListener("pointerup", stopJump);
 ui.jumpButton.addEventListener("pointercancel", stopJump);
 ui.jumpButton.addEventListener("pointerleave", stopJump);
+ui.startGameButton.addEventListener("click", startFromStartScreen);
+ui.instructionsStartButton.addEventListener("click", startFromStartScreen);
+ui.showInstructionsButton.addEventListener("click", showInstructions);
+ui.backToStartButton.addEventListener("click", showStartMenu);
 ui.restart.addEventListener("click", () => reset(currentLevelIndex));
 ui.nextLevel.addEventListener("click", () => {
   const next = (currentLevelIndex + 1) % examples.length;
@@ -2516,7 +2579,9 @@ window.addEventListener("keydown", (event) => {
   if (event.code === "Space") {
     event.preventDefault();
     if (!editingPoints && !event.repeat) {
-      if (!state.running) {
+      if (isStartScreenOpen()) {
+        startFromStartScreen();
+      } else if (!state.running) {
         toggleRun();
       } else {
         jump();

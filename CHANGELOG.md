@@ -2,6 +2,19 @@
 
 All notable GeoBait updates and patches are listed here.
 
+## 2026-06-15
+
+- Replaced semifinal music.
+  - Removed the Audio.com embed.
+  - Added `semifinal-music.mp3` as the semifinal preset music.
+- Added final-tier music.
+  - `kys` and the current final preset now use `It's TV Time!` by Toby Fox from `its-tv-time.mp3`.
+- Fixed the instructions overlay showing both panels at once.
+- Added a start screen and instructions overlay.
+  - Added Start Game and Instructions buttons.
+  - Added a controls guide for jumping, jet mode, pads, orbs, practice mode, and sidebar options.
+  - Space now starts the game from the start screen.
+
 ## 2026-06-12
 
 - Made jump pad and jump orb hitboxes invisible while keeping the larger collision areas active.
