@@ -2,6 +2,21 @@
 
 All notable GeoBait updates and patches are listed here.
 
+## 2026-06-17
+
+- Prepared GeoBait for itch.io HTML upload.
+  - Updated browser asset paths to work from a zipped `index.html` package.
+  - Added `.mp3` serving support for local testing.
+  - Built `dist/packages/geobait-itch-html.zip` with `index.html` at the ZIP root.
+- Updated the `Spear of Justice` music credit to Toby Fox.
+
+## 2026-06-16
+
+- Added level-specific music for early maps.
+  - `Spear of Justice` now uses `spear-of-justice.mp3` with credit to Toby Fox.
+  - `Soft Slope`, the third beginner map, now uses `spear-of-justice-2.mp3`.
+- Confirmed `Spear of Justice` naming across the app.
+
 ## 2026-06-15
 
 - Replaced semifinal music.
@@ -110,7 +125,7 @@ All notable GeoBait updates and patches are listed here.
 
 ## 2026-06-06
 
-- Added six beginner maps easier than `Stereo-Style Full Course`.
+- Added six beginner maps easier than `Spear of Justice`.
   - `First Steps`
   - `Tiny Hops`
   - `Soft Slope`
@@ -177,7 +192,7 @@ All notable GeoBait updates and patches are listed here.
 ## 2026-06-03
 
 - Started the local GeoBait server with `npm start`, serving the game at `http://localhost:3000`.
-- Patched the Stereo-Style Full Course preset so the jump height is possible.
+- Patched the Spear of Justice preset so the jump height is possible.
   - Raised the preset jump value from `760` to `900`.
   - Updated arcade physics so Regular Geometry Dash mode uses each level's configured `gravity` and `jump` values.
 - Restyled the game to look like a graphing calculator.

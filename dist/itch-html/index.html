@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GeoBait</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="game-area" aria-label="GeoBait game">
+        <canvas id="game" width="1280" height="720"></canvas>
+        <div class="hud">
+          <div>
+            <strong id="levelName">Point Path</strong>
+            <span id="formulaLabel">points -> lines -> blocks</span>
+          </div>
+          <div class="stats">
+            <span id="speedLabel">speed 420</span>
+            <span id="progressLabel">0%</span>
+            <span id="attemptLabel">attempts 0</span>
+            <span id="deathLabel">deaths 0</span>
+            <span id="bestLabel">best 0%</span>
+            <span id="botProgressLabel">bots off</span>
+          </div>
+        </div>
+        <div id="status" class="status">Press Start to begin</div>
+        <div id="achievement" class="achievement hidden" aria-live="polite">
+          <strong id="achievementName">Achievement</strong>
+          <span id="achievementDescription">Description</span>
+        </div>
+        <div id="finalTrackPanel" class="final-track hidden">
+          <span>Final-level music: It's TV Time! by Toby Fox</span>
+        </div>
+        <div id="semifinalTrackPanel" class="final-track hidden">
+          <span>Semifinal music: Super Mario 64 Looping the Rooms</span>
+        </div>
+        <div id="spearTrackPanel" class="final-track hidden">
+          <span>Spear of Justice music: Spear of Justice by Toby Fox</span>
+        </div>
+        <div id="softSlopeTrackPanel" class="final-track hidden">
+          <span>Soft Slope music: Spear of a Justice 2</span>
+        </div>
+        <div id="extremeWinScreen" class="win-screen hidden" role="dialog" aria-modal="true" aria-labelledby="extremeWinTitle">
+          <div class="win-screen-panel">
+            <span class="win-screen-rank">Merciless Clear</span>
+            <h2 id="extremeWinTitle">You beat the impossible map</h2>
+            <p id="extremeWinText">That was the hardest tier. Run it back or pick another level.</p>
+            <button id="closeWinScreen" type="button">Continue</button>
+          </div>
+        </div>
+        <div id="startScreen" class="start-screen" role="dialog" aria-modal="true" aria-labelledby="startScreenTitle">
+          <div id="startMenu" class="start-screen-panel">
+            <span class="start-screen-model">GB-84 Plus</span>
+            <h2 id="startScreenTitle">GeoBait</h2>
+            <p>Graphing-calculator Geometry Dash with custom maps, practice checkpoints, bots, cheats, and player customization.</p>
+            <div class="start-screen-actions">
+              <button id="startGameButton" type="button">Start Game</button>
+              <button id="showInstructionsButton" type="button">Instructions</button>
+            </div>
+          </div>
+          <div id="instructionsPanel" class="start-screen-panel instructions-panel hidden">
+            <span class="start-screen-model">How to Play</span>
+            <h2>Instructions</h2>
+            <ul>
+              <li>Press Space or Jump to hop as the cube.</li>
+              <li>Hold Space or Jump while in jet mode to fly.</li>
+              <li>Orange pads bounce automatically.</li>
+              <li>Floating orbs activate when you press Space while touching them.</li>
+              <li>Practice mode saves checkpoints and respawns you there.</li>
+              <li>Use the sidebar to pick maps, bots, play style, cheats, and character options.</li>
+            </ul>
+            <div class="start-screen-actions">
+              <button id="instructionsStartButton" type="button">Start Game</button>
+              <button id="backToStartButton" type="button">Back</button>
+            </div>
+          </div>
+        </div>
+        <audio id="musicTrack" src="unity-remake.mp3" loop preload="auto"></audio>
+      </section>
+
+      <aside class="panel" aria-label="Level controls">
+        <div class="brand">
+          <span class="model">GB-84 Plus</span>
+          <h1>GeoBait</h1>
+          <p>Graph points into playable platform paths.</p>
+        </div>
+
+        <nav class="panel-nav" aria-label="Control sections">
+          <a href="#runControls">Run</a>
+          <a href="#mapControls">Maps</a>
+          <a href="#buildControls">Build</a>
+          <a href="#modeControls">Modes</a>
+          <a href="#characterControls">Character</a>
+          <a href="#helpControls">Help</a>
+        </nav>
+
+        <section id="runControls" class="control-section">
+          <h2>Run</h2>
+          <div class="controls">
+            <button id="playPause" type="button">Start</button>
+            <button id="jumpButton" type="button">Jump</button>
+            <button id="restart" type="button">Restart</button>
+            <button id="nextLevel" type="button">Next</button>
+            <button id="randomLevel" type="button">Random</button>
+            <button id="musicToggle" type="button">Music</button>
+          </div>
+          <label>
+            Bot race
+            <select id="botCountSelect">
+              <option value="0" selected>Off</option>
+              <option value="1">1 bot</option>
+              <option value="3">3 bots</option>
+            </select>
+          </label>
+        </section>
+
+        <section id="mapControls" class="control-section">
+          <h2>Maps</h2>
+          <label>
+            Example map
+            <select id="levelSelect"></select>
+          </label>
+        </section>
+
+        <section id="buildControls" class="control-section editor-control">
+          <h2>Build</h2>
+          <label>
+            Platform points
+            <textarea id="platformInput" spellcheck="false" rows="7"></textarea>
+          </label>
+
+          <label>
+            Spike points
+            <textarea id="hazardInput" spellcheck="false" rows="4"></textarea>
+          </label>
+
+          <label>
+            Portals
+            <textarea id="portalInput" spellcheck="false" rows="4"></textarea>
+          </label>
+
+          <label>
+            Jump pads
+            <textarea id="jumpPadInput" spellcheck="false" rows="3"></textarea>
+          </label>
+
+          <label>
+            Jump orbs
+            <textarea id="jumpOrbInput" spellcheck="false" rows="3"></textarea>
+          </label>
+
+          <div class="row">
+            <button id="addPointMode" type="button">Add Points</button>
+            <button id="undoPoint" type="button">Undo Point</button>
+          </div>
+
+          <button id="applyLevel" type="button">Build Custom Level</button>
+        </section>
+
+        <section id="modeControls" class="control-section">
+          <h2>Modes</h2>
+          <label>
+            Play style
+            <select id="playStyle">
+              <option value="graph">Graphing calculator</option>
+              <option value="classic">Regular Geometry Dash</option>
+            </select>
+          </label>
+
+          <label class="editor-control">
+            Physics mode
+            <select id="physicsMode">
+              <option value="arcade">Regular Geometry Dash</option>
+              <option value="real">Real life physics</option>
+            </select>
+          </label>
+
+          <div class="cheat-panel">
+            <label class="switch">
+              <input id="practiceMode" type="checkbox">
+              <span>Practice</span>
+            </label>
+            <label class="switch">
+              <input id="cheatsEnabled" type="checkbox">
+              <span>Cheats</span>
+            </label>
+            <label>
+              Cheat code
+              <input id="cheatCodeInput" type="text" autocomplete="off" spellcheck="false" placeholder="ENTER CODE">
+            </label>
+          </div>
+
+          <div class="row editor-control">
+            <label>
+              Gravity
+              <input id="gravityInput" type="number" value="1900" min="900" max="3000" step="50">
+            </label>
+            <label>
+              Jump
+              <input id="jumpInput" type="number" value="760" min="520" max="1100" step="20">
+            </label>
+          </div>
+        </section>
+
+        <section id="characterControls" class="control-section">
+          <h2>Character</h2>
+          <div class="character-panel">
+            <label class="switch">
+              <input id="trailEnabled" type="checkbox">
+              <span>Trail</span>
+            </label>
+            <label>
+              Character image
+              <input id="characterUpload" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+            </label>
+            <div class="player-options">
+              <label>
+                Name tag
+                <input id="playerNameInput" type="text" maxlength="14" autocomplete="off" spellcheck="false" placeholder="PLAYER">
+              </label>
+              <label>
+                Size
+                <select id="playerSizeSelect">
+                  <option value="0.86">Tiny</option>
+                  <option value="1" selected>Normal</option>
+                  <option value="1.14">Big</option>
+                </select>
+              </label>
+              <label>
+                Spin
+                <select id="playerSpinSelect">
+                  <option value="normal" selected>Normal</option>
+                  <option value="steady">Steady</option>
+                  <option value="none">None</option>
+                </select>
+              </label>
+              <label class="switch">
+                <input id="playerGlowEnabled" type="checkbox">
+                <span>Glow</span>
+              </label>
+            </div>
+            <div class="character-colors" aria-label="Character colors">
+              <label>
+                Body
+                <input id="characterBodyColor" type="color" value="#28d8ff">
+              </label>
+              <label>
+                Eyes
+                <input id="characterEyeColor" type="color" value="#101115">
+              </label>
+              <label>
+                Accent
+                <input id="characterAccentColor" type="color" value="#ffd166">
+              </label>
+            </div>
+            <button id="resetCharacter" type="button">Reset Character</button>
+          </div>
+        </section>
+
+        <section id="helpControls" class="control-section notes">
+          <h2>Help</h2>
+          <span>Point format: one x,y pair per line. Example: 6,10.</span>
+          <span>Portal format: jet,12,3 or cube,20,1.</span>
+          <span>Jump pad format: 18,2 or down,18,5. Pads bounce automatically.</span>
+          <span>Jump orb format: 20,3 or down,20,6. Press Space while touching one.</span>
+          <span>Blocks snap to a grid and overlapping or too-crooked lines are fixed or rejected.</span>
+          <span>Start begins movement. Jump hops as cube, hold Jump/Space to fly as jet. Restart: R.</span>
+          <span class="music-credit">Music: thanks to TheFatRat and npph5412.</span>
+        </section>
+      </aside>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>

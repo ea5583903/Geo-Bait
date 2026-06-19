@@ -3,7 +3,7 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const cubeTexture = new Image();
-cubeTexture.src = "/cube-texture-transparent.png";
+cubeTexture.src = "cube-texture-transparent.png";
 const characterImage = new Image();
 
 const ui = {
@@ -18,6 +18,8 @@ const ui = {
   achievementDescription: document.getElementById("achievementDescription"),
   finalTrackPanel: document.getElementById("finalTrackPanel"),
   semifinalTrackPanel: document.getElementById("semifinalTrackPanel"),
+  spearTrackPanel: document.getElementById("spearTrackPanel"),
+  softSlopeTrackPanel: document.getElementById("softSlopeTrackPanel"),
   extremeWinScreen: document.getElementById("extremeWinScreen"),
   extremeWinText: document.getElementById("extremeWinText"),
   closeWinScreen: document.getElementById("closeWinScreen"),
@@ -98,9 +100,11 @@ const TRAIL_MAX_POINTS = 24;
 const BOT_COLORS = ["#ff6b8a", "#7dff9a", "#ffd166"];
 const BOT_NAMES = ["Byte", "Delta", "Nova"];
 const BOT_CRASH_CHANCES = [0.8, 0.5, 0.1];
-const DEFAULT_MUSIC_SRC = "/unity-remake.mp3";
-const SEMIFINAL_MUSIC_SRC = "/semifinal-music.mp3";
-const FINAL_MUSIC_SRC = "/its-tv-time.mp3";
+const DEFAULT_MUSIC_SRC = "unity-remake.mp3";
+const SPEAR_MUSIC_SRC = "spear-of-justice.mp3";
+const SOFT_SLOPE_MUSIC_SRC = "spear-of-justice-2.mp3";
+const SEMIFINAL_MUSIC_SRC = "semifinal-music.mp3";
+const FINAL_MUSIC_SRC = "its-tv-time.mp3";
 const defaultCharacter = {
   image: "",
   body: "#28d8ff",
@@ -121,7 +125,7 @@ const runStats = {
 
 const examples = [
   {
-    name: "Stereo-Style Full Course",
+    name: "Spear of Justice",
     points: "0,0\n10,0\n14,1\n18,1\n22,0\n30,0\n35,1\n40,1\n45,0\n52,0\n56,2\n62,2\n67,1\n73,1\n79,0\n88,0\n94,1\n101,1\n108,0\n116,0\n122,2\n128,2\n134,3\n142,3\n150,2\n158,2\n166,1\n174,1\n182,0\n192,0",
     spikes: "6,0\n12,0\n20,0\n27,0\n33,0\n43,1\n50,0\n55,1\n64,2\n71,1\n77,0\n84,0\n91,0\n99,1\n106,0\n114,0\n120,1\n131,2\n139,3\n147,2\n155,2\n163,1\n171,1\n180,0\n188,0",
     portals: "jet,82,1\ncube,112,1",
@@ -564,7 +568,7 @@ const examples = [
     jump: 930
   },
   {
-    name: "It's NOT TV time :(",
+    name: "Looping the SM64",
     points: "0,0\n5,0\n9,2\n14,0\n19,3\n25,1\n31,4\n38,2\n45,0\n52,3\n59,1\n66,4\n74,2\n82,0\n91,3\n101,1\n112,4\n124,0",
     spikes: "4,0\n7,0\n11,2\n16,0\n22,3\n28,1\n34,4\ndown,40,6\n43,2\n49,0\n56,3\n63,1\n70,4\n78,2\n86,0\n96,3\n106,1\n116,4",
     portals: "jet,50,2\ncube,72,2\njet,90,2\ncube,114,1",
@@ -607,7 +611,7 @@ const DEFAULT_THEME = {
 };
 
 const LEVEL_THEMES = {
-  "Stereo-Style Full Course": { skyTop: "#1b2456", skyMid: "#10182f", accent: "#32d7ff" },
+  "Spear of Justice": { skyTop: "#1b2456", skyMid: "#10182f", accent: "#32d7ff" },
   "First Steps": { skyTop: "#163b2e", skyMid: "#0c1f19", accent: "#7dff9a", hazard: "#ff8a75" },
   "Tiny Hops": { skyTop: "#1d3657", skyMid: "#0c1828", accent: "#8fd0ff", hazard: "#ff8aa1" },
   "Soft Slope": { skyTop: "#283f19", skyMid: "#111e0b", accent: "#b9ff77", hazard: "#ffb36b" },
@@ -1132,12 +1136,30 @@ function isSemifinalMusicLevel() {
   return currentLevelIndex === examples.length - 2;
 }
 
+function isSpearMusicLevel() {
+  return level.name === "Spear of Justice";
+}
+
+function isSoftSlopeMusicLevel() {
+  return level.name === "Soft Slope";
+}
+
 function updateLevelMusic() {
-  const nextSrc = isFinalMusicLevel() ? FINAL_MUSIC_SRC : isSemifinalMusicLevel() ? SEMIFINAL_MUSIC_SRC : DEFAULT_MUSIC_SRC;
+  const nextSrc = isFinalMusicLevel()
+    ? FINAL_MUSIC_SRC
+    : isSemifinalMusicLevel()
+      ? SEMIFINAL_MUSIC_SRC
+      : isSpearMusicLevel()
+        ? SPEAR_MUSIC_SRC
+        : isSoftSlopeMusicLevel()
+          ? SOFT_SLOPE_MUSIC_SRC
+          : DEFAULT_MUSIC_SRC;
   const wasPlaying = !ui.musicTrack.paused;
   const semifinalMusic = isSemifinalMusicLevel();
   ui.finalTrackPanel.classList.toggle("hidden", !isFinalMusicLevel());
   ui.semifinalTrackPanel.classList.toggle("hidden", !semifinalMusic);
+  ui.spearTrackPanel.classList.toggle("hidden", !isSpearMusicLevel());
+  ui.softSlopeTrackPanel.classList.toggle("hidden", !isSoftSlopeMusicLevel());
   if (ui.musicTrack.getAttribute("src") !== nextSrc) {
     ui.musicTrack.setAttribute("src", nextSrc);
     ui.musicTrack.load();
